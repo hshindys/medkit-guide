@@ -6,33 +6,26 @@ Item {
   id: root
   property var pluginApi
 
-  readonly property string medkitPath: (Quickshell.env("HOME") || "/home/hatem") + "/.local/share/medkit/medicines.json"
-  readonly property string cachePath: (pluginApi && pluginApi.stateDir ? pluginApi.stateDir : (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/ryoku/plugins/medkit-guide") + "/medicine-cache.json"
-  readonly property string scriptPath: pluginApi && pluginApi.pluginDir ? pluginApi.pluginDir + "/bin/fetch-medicine.py" : ""
+  readonly property string scriptPath: pluginApi && pluginApi.pluginDir ? pluginApi.pluginDir + "/bin/fetch-medicine.py" : (Quickshell.env("HOME") + "/.local/share/ryoku/plugins/medkit-guide/bin/fetch-medicine.py")
 
   property var medicines: []
   property bool loading: false
   property string lastError: ""
-  property real now: Date.now()
 
   function loadMedicines() {
     root.loading = true
     root.lastError = ""
-    // Run the helper script
     fetchProcess.command = ["python3", root.scriptPath]
     fetchProcess.running = true
   }
 
   Process {
     id: fetchProcess
-    property string output: ""
-    onStarted: { output = "" }
-    onReadyRead: { output += readAllStandardOutput() }
-    onExited: (code) => {
-      root.loading = false
-      if (code === 0) {
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
         try {
-          var data = JSON.parse(output)
+          var data = JSON.parse(text)
           if (data.medicines) {
             var meds = []
             for (var key in data.medicines) {
@@ -44,11 +37,24 @@ Item {
             root.lastError = data.errors.join("; ")
           }
         } catch (e) {
-          root.lastError = "Failed to parse medicine data"
+          root.lastError = "Failed to parse medicine data: " + String(e)
         }
-      } else {
-        root.lastError = "Failed to fetch medicine details"
+        root.loading = false
       }
+    }
+    stderr: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        if (text && text.trim()) {
+          root.lastError = text.trim()
+        }
+      }
+    }
+    onExited: function(exitCode) {
+      if (exitCode !== 0 && !root.lastError) {
+        root.lastError = "Failed to fetch medicine details (exit " + exitCode + ")"
+      }
+      root.loading = false
     }
   }
 

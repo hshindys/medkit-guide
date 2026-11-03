@@ -83,7 +83,14 @@ def parse_result(r, generic_name):
             details[key] = details[key].replace('<br>', '\n').replace('<br/>', '\n').replace('<br />', '\n')
             import re
             details[key] = re.sub(r'<[^>]+>', '', details[key])
-            details[key] = details[key].strip()
+        # Clean up section headers and extra whitespace
+        import re
+        # Remove leading section headers like "1 INDICATIONS AND USAGE", "2 DOSAGE AND ADMINISTRATION", etc.
+        details[key] = re.sub(r'^[A-Z][A-Z\s]{10,}(?=[A-Z][a-z])', '', details[key])
+        # Remove "WARNINGS Click here to enter Warnings" artifact
+        details[key] = details[key].replace('WARNINGS Click here to enter Warnings', '').strip()
+        # Remove extra whitespace
+        details[key] = re.sub(r'\s+', ' ', details[key]).strip()
     
     return details
 
