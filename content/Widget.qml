@@ -9,16 +9,10 @@ Item {
   property real glyphW: 22
   property real glyphH: 22
 
-  readonly property var service: pluginApi && pluginApi.mainInstance ? pluginApi.mainInstance : null
-
   Text {
     anchors.centerIn: parent
-    text: "💊"
+    text: "M"
     font.pixelSize: 16 * root.s
-  }
-
-  MouseArea {
-    anchors.fill: parent
-    onClicked: root.pluginApi && root.pluginApi.togglePanel()
+    color: "#ff0000"
   }
 }

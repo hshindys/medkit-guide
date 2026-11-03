@@ -1,7 +1,7 @@
 {
   "id": "medkit-guide",
   "name": "MedKit Guide",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Hatem <hatem@users.noreply.github.com>",
   "description": "Medicine guide for MedKit: detailed info, interactions, side effects, and food warnings from OpenFDA. Click any medicine to see full prescribing details.",
   "license": "MIT",
