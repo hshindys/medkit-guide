@@ -195,6 +195,30 @@ Item {
             }
           }
 
+          // Refill button (shown when stock is low)
+          Rectangle {
+            width: parent.width
+            height: 30 * root.s
+            radius: 8 * root.s
+            visible: (modelData.stock || 0) <= (modelData.refill_at || 5)
+            color: refillTap.containsMouse ? "#ef4444" : "#dc2626"
+
+            Text {
+              anchors.centerIn: parent
+              text: qsTr("🔄 Refill " + modelData.name)
+              color: "#ffffff"
+              font.family: Theme.font
+              font.pixelSize: 10 * root.s
+              font.bold: true
+            }
+            MouseArea {
+              id: refillTap
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: root.service && root.service.refill(modelData.name)
+            }
+          }
           // Expand/collapse toggle
           Rectangle {
             width: parent.width

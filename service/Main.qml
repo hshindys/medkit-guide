@@ -11,6 +11,19 @@ Item {
   property var medicines: []
   property bool loading: false
   property string lastError: ""
+  property string actionMessage: ""
+
+  function refill(name) {
+    root.actionMessage = "Refilling " + name + "..."
+    refillProc.command = ["/home/hatem/medkit/bin/medkit", "--refill", name]
+    refillProc.running = true
+  }
+
+  function refillAll() {
+    root.actionMessage = "Refilling all low..."
+    refillProc.command = ["/home/hatem/medkit/bin/medkit", "--refill"]
+    refillProc.running = true
+  }
 
   function loadMedicines() {
     root.loading = true
@@ -67,6 +80,25 @@ Item {
       if (root.medicines[i].name === name) return root.medicines[i]
     }
     return null
+  }
+
+  Process {
+    id: refillProc
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        if (text && text.trim()) {
+          root.actionMessage = text.trim()
+        }
+      }
+    }
+    onExited: function(exitCode) {
+      if (exitCode !== 0) {
+        root.actionMessage = "Refill failed"
+      }
+      // Refresh medicine data after refill
+      Qt.callLater(root.loadMedicines)
+    }
   }
 
   Component.onCompleted: {
