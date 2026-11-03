@@ -86,7 +86,11 @@ def parse_result(r, generic_name):
         # Clean up section headers and extra whitespace
         import re
         # Remove leading section headers like "1 INDICATIONS AND USAGE", "2 DOSAGE AND ADMINISTRATION", etc.
-        details[key] = re.sub(r'^[A-Z][A-Z\s]{10,}(?=[A-Z][a-z])', '', details[key])
+        # Remove common section header prefixes
+        for header in ['INDICATIONS AND USAGE', 'DOSAGE AND ADMINISTRATION', 'WARNINGS', 'CONTRAINDICATIONS', 'ADVERSE REACTIONS', 'DRUG INTERACTIONS', 'OVERDOSAGE', 'PREGNANCY', 'NURSING MOTHERS', 'PEDIATRIC USE', 'GERIATRIC USE', 'HOW SUPPLIED']:
+            details[key] = details[key].replace(header, '', 1).strip()
+        # Also remove leading numbers and whitespace
+        details[key] = re.sub(r'^[\d\s]+', '', details[key]).strip()
         # Remove "WARNINGS Click here to enter Warnings" artifact
         details[key] = details[key].replace('WARNINGS Click here to enter Warnings', '').strip()
         # Remove extra whitespace
